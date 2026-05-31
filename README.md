@@ -10,13 +10,21 @@ It also fixes a bug in Honeycomb's stock config (see [The index fix](#the-index-
 
 ---
 
+## Download
+
+**Most people want the ready-to-run app:** grab the latest `BravoSwitcher.exe` from the [**Releases**](../../releases) page. No Python, no setup — see [Quick start (app)](#quick-start-app).
+
+Prefer to run or modify the Python source instead? See [Run from source](#run-from-source).
+
+---
+
 ## Why this exists
 
 - **Better Bravo Lights** (the popular community tool) does not work with MSFS 2024.
 - Honeycomb's 2025 BravoLED driver works with MSFS 2024 but is undocumented and single-config.
 - Nothing currently bridges that gap with per-aircraft switching for the new driver.
 
-This is a small, dependency-light Python tool that does exactly that.
+This is a small, dependency-light tool that does exactly that.
 
 ---
 
@@ -28,7 +36,14 @@ This is a small, dependency-light Python tool that does exactly that.
 - Small GUI to start/stop, view connection state, see the detected aircraft and active config, and watch a live log.
 - Built-in **debug mode** that prints live SimVar values so you can tune your own thresholds.
 - Corrected default config that fixes the indexed-SimVar bug in Honeycomb's stock file.
-- Pure standard-library GUI (tkinter); the only third-party dependency is the SimConnect library.
+- Ships as a single standalone `.exe` (no Python needed), or runs from source if you prefer.
+
+---
+
+## Screenshots
+
+![BravoLED Config Switcher GUI](images/GUI_Screenshot.png)
+![BravoLED Config Switcher GUI](images/GUI_Screenshot2.png)
 
 ---
 
@@ -37,12 +52,55 @@ This is a small, dependency-light Python tool that does exactly that.
 - Windows 10 or 11
 - Microsoft Flight Simulator 2024
 - Honeycomb Bravo Throttle Quadrant with the **BravoLED** driver installed (MSFS 2024 version)
-- [Python 3](https://www.python.org/downloads/) (3.10 or newer recommended)
-- The `SimConnect` Python library (and `pywin32`, which it relies on)
+
+The standalone `.exe` needs nothing else. Running from source additionally needs [Python 3](https://www.python.org/downloads/) (3.10+) and the `SimConnect` library (plus `pywin32`, which it relies on).
 
 ---
 
-## Installation
+## Quick start (app)
+
+This is the recommended path for most users.
+
+1. Download `BravoSwitcher.exe` from the [Releases](../../releases) page.
+2. Place it inside your BravoLED folder, alongside `BravoLED.exe`. For the MS Store / Game Pass install that folder is typically:
+
+   ```
+   %LOCALAPPDATA%\Packages\Microsoft.Limitless_8wekyb3d8bbwe\LocalCache\Packages\Community\BravoLED\
+   ```
+
+   (The Steam install path differs; search your Community folder for `BravoLED`.)
+3. Put the config files from this repo in the same folder:
+
+   ```
+   BravoLED\
+       BravoLED.exe          (already there - the driver)
+       config.json           (already there - gets overwritten automatically)
+       config_default.json   (from this repo - the fixed fallback config)
+       config_tbm930.json    (from this repo - example aircraft config)
+       BravoSwitcher.exe     (from Releases)
+   ```
+4. Double-click `BravoSwitcher.exe`, click **Start**, and launch a flight in MSFS 2024.
+
+From there it is automatic. When you load or change aircraft the tool detects it, swaps the matching config, and restarts the driver. Expect a brief LED flicker on aircraft change — that is the driver reloading, and is normal.
+
+> **First launch is a few seconds slow.** The single-file exe unpacks itself to a temp folder on startup. This only affects the first open of each session.
+>
+> **Possible antivirus false positive.** PyInstaller-built exes are sometimes flagged by Windows Defender or others. This is a known false positive for this kind of app; the full source is in this repo and you can build the exe yourself (see below) if you prefer.
+
+> **Important:** once the switcher is running, `config.json` is a throwaway file that gets overwritten on every aircraft change. Treat the `config_*.json` files as your source of truth. Do not hand-edit `config.json` directly.
+
+The GUI shows:
+
+- **SimConnect** — connection state (waiting / connected / disconnected)
+- **Detected aircraft** — the exact `TITLE` string the sim reports
+- **Active config** — which `config_*.json` is currently loaded
+- **Log** — live output
+
+---
+
+## Run from source
+
+Only needed if you want to run the Python directly or modify it.
 
 ### 1. Install Python
 
@@ -71,17 +129,7 @@ Verify:
 python -c "import SimConnect; print('OK')"
 ```
 
-### 3. Drop the files into your BravoLED folder
-
-The BravoLED driver lives in your MSFS 2024 Community folder. For the MS Store / Game Pass install it is typically:
-
-```
-%LOCALAPPDATA%\Packages\Microsoft.Limitless_8wekyb3d8bbwe\LocalCache\Packages\Community\BravoLED\
-```
-
-(The Steam install path differs; search your Community folder for `BravoLED`.)
-
-Place these files **inside** that `BravoLED` folder alongside `BravoLED.exe`:
+### 3. Drop the source files into your BravoLED folder
 
 ```
 BravoLED\
@@ -94,24 +142,18 @@ BravoLED\
     Start BravoLED Switcher.bat  (from this repo)
 ```
 
-> **Important:** once the switcher is running, `config.json` is a throwaway file that gets overwritten on every aircraft change. Treat the `config_*.json` files as your source of truth. Do not hand-edit `config.json` directly.
+Then double-click **`Start BravoLED Switcher.bat`** (or run `python bravo_switcher_gui.py`), click **Start**, and launch a flight.
 
----
+You can also run the switcher headless with no window via `python bravo_config_switcher.py`.
 
-## Usage
+### 4. (Optional) Build your own exe
 
-1. Double-click **`Start BravoLED Switcher.bat`** to open the control panel.
-2. Click **Start**.
-3. Launch a flight in MSFS 2024.
+```
+pip install pyinstaller
+python -m PyInstaller bravo_switcher.spec
+```
 
-From there it is automatic. When you load or change aircraft the tool detects it, swaps the matching config, and restarts the driver. Expect a brief LED flicker on aircraft change — that is the driver reloading, and is normal.
-
-The GUI shows:
-
-- **SimConnect** — connection state (waiting / connected / disconnected)
-- **Detected aircraft** — the exact `TITLE` string the sim reports
-- **Active config** — which `config_*.json` is currently loaded
-- **Log** — live output
+The finished app appears at `dist\BravoSwitcher.exe`. The included `bravo_switcher.spec` bundles the SimConnect runtime DLL and the lazily-imported SimConnect/pywin32 modules, which a plain PyInstaller invocation would otherwise miss.
 
 ---
 
@@ -130,6 +172,8 @@ AIRCRAFT_RULES = [
 ```
 
 Matching is a **case-insensitive substring** of the title, and rules are checked top to bottom (put more specific rules above more general ones). `"TBM 930"` will match every TBM 930 livery, for example.
+
+> If you use the prebuilt `.exe`, adding aircraft means editing the source and rebuilding (step 4 above), or switching to running from source. A future version may move the rules into an external file so the exe can read them without a rebuild.
 
 ---
 
@@ -177,6 +221,8 @@ Every ~15 seconds it prints a snapshot like:
 
 Watch the values at idle and at cruise, then set a threshold comfortably outside the normal range in your config (for a low-pressure warning, set it just below normal operating pressure). Set `DEBUG_SIMVARS = False` again when you are done.
 
+> Debug mode lives in the source. To use it with the prebuilt exe, run from source (or rebuild after toggling it).
+
 > **Units gotcha:** the SimConnect library reports `GENERAL ENG OIL PRESSURE` in **psf** (pounds per square foot), not psi. 1 psi ≈ 144 psf. The example TBM config keeps `psf` and uses the raw psf value in its threshold — match whatever the debug output shows.
 
 ---
@@ -201,20 +247,26 @@ This fix applies to **everyone** using the stock driver, single-engine GA includ
 
 ## How it works
 
-`bravo_config_switcher.py` connects to MSFS via SimConnect and polls the `TITLE` SimVar. On an aircraft change it copies the matching `config_<name>.json` over `config.json`, then runs `taskkill` on `BravoLED.exe` and relaunches it so the driver reloads the new config. The GUI (`bravo_switcher_gui.py`) runs the switcher as a subprocess and parses its log output for display, so the command-line script also works standalone.
+`bravo_config_switcher.py` connects to MSFS via SimConnect and polls the `TITLE` SimVar. On an aircraft change it copies the matching `config_<name>.json` over `config.json`, then runs `taskkill` on `BravoLED.exe` and relaunches it so the driver reloads the new config. The GUI (`bravo_switcher_gui.py`) imports the switcher and runs it in a background thread, capturing its log output for display — so the command-line switcher also works standalone, and the same code powers the bundled exe.
 
 ---
 
 ## Troubleshooting
 
-**Double-clicking the .bat asks "how do you want to open this file?"**
+**The exe won't start, or antivirus quarantined it**
+Likely a false positive (see [Quick start](#quick-start-app)). Restore/allow it, or build from source yourself.
+
+**(Source) Double-clicking the .bat asks "how do you want to open this file?"**
 Python isn't on PATH. Re-run the Python installer, choose Modify, and enable "Add python.exe to PATH".
 
-**`Fatal error in launcher: Unable to create process ... python.exe`**
+**(Source) `Fatal error in launcher: Unable to create process ... python.exe`**
 A broken or partial Python install, common with per-user AppData installs. Uninstall all Python entries from Settings → Apps, then reinstall with "Install for all users" checked.
 
+**(Source) `pyinstaller` is not recognized**
+The Scripts folder isn't on PATH. Use `python -m PyInstaller bravo_switcher.spec` instead.
+
 **GUI shows "waiting for sim" forever**
-MSFS isn't running, or SimConnect isn't available yet. The tool will connect on its own once the sim is up. Confirm `pip install SimConnect` succeeded.
+MSFS isn't running, or SimConnect isn't available yet. The tool will connect on its own once the sim is up.
 
 **An LED is stuck on and the value clearly shouldn't trigger it**
 The SimVar probably isn't resolving (reads as 0). Enable debug mode and confirm the value is real. If it reads `n/a`, the datum likely needs an engine index (`:1`) — see [The index fix](#the-index-fix).
