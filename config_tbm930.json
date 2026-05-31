@@ -1,0 +1,246 @@
+/*
+============================
+BRAVO LIGHT MAP  (TBM 930)
+============================
+
+LED : LABEL
+----+-----------------------
+0   : HDG
+1   : NAV
+2   : APR
+3   : REV            (G3000 has no true backcourse - will stay off, harmless)
+4   : ALT
+5   : VS
+6   : IAS
+7   : AUTO PILOT
+
+8   : GEAR L (green)
+9   : GEAR L (red)
+10  : GEAR C (green)
+11  : GEAR C (red)
+12  : GEAR R (green)
+13  : GEAR R (red)
+14  : MASTER WARNING       NOT ASSIGNED
+15  : ENGINE FIRE
+
+16  : LOW OIL PRESSURE
+17  : LOW FUEL PRESSURE
+18  : ANTI ICE
+19  : STARTER ENGAGED
+20  : APU                  NOT ASSIGNED
+21  : MASTER CAUTION       NOT ASSIGNED
+22  : VACUUM               REMOVED - TBM 930 is all-glass, no vacuum system
+23  : LOW HYD PRESSURE     NOT ASSIGNED
+
+24  : AUX FUEL PUMP        NOT ASSIGNED
+25  : PARKING BREAK
+26  : LOW VOLTS            NOT ASSIGNED
+27  : DOOR
+----+-----------------------
+
+CHANGES FROM THE DEFAULT (PISTON) CONFIG:
+  - ENG_OIL_PS  : units psf -> psi, threshold 2000 -> 60
+                  (PT6A normal oil pressure is ~90-135 psi; warn under ~60)
+  - ENG_FUEL_PS : threshold raised for a turbine fuel system
+  - SUCTION/LED 22 : removed entirely (no vacuum instruments on the TBM)
+
+TUNING NOTE:
+  The oil/fuel pressure thresholds below are sensible starting points, but
+  MSFS does not always model these values identically across aircraft. If
+  LED 16 or LED 17 sits stuck on or never lights, load the TBM, note the
+  real values, and nudge these numbers. Everything else should be correct.
+*/
+
+{
+  "description": "BRAVO configuration - Daher TBM 930",
+  "version": "1.0",
+  "author": "Honeycomb aeronautical (TBM 930 edit)",
+
+  "simVars": [
+    {
+      "label": "AMPS",
+      "datum": "ELECTRICAL TOTAL LOAD AMPS",
+      "units": "Amperes"
+    },
+    {
+      "label": "HDG",
+      "datum": "AUTOPILOT HEADING LOCK",
+      "units": "bool"
+    },
+    {
+      "label": "NAV",
+      "datum": "AUTOPILOT NAV1 LOCK",
+      "units": "bool"
+    },
+    {
+      "label": "APR",
+      "datum": "AUTOPILOT APPROACH HOLD",
+      "units": "bool"
+    },
+    {
+      "label": "REV",
+      "datum": "AUTOPILOT BACKCOURSE HOLD",
+      "units": "bool"
+    },
+    {
+      "label": "ALT",
+      "datum": "AUTOPILOT ALTITUDE LOCK",
+      "units": "bool"
+    },
+    {
+      "label": "V_HOLD",
+      "datum": "AUTOPILOT VERTICAL HOLD",
+      "units": "bool"
+    },
+    {
+      "label": "FL_LEV",
+      "datum": "AUTOPILOT FLIGHT LEVEL CHANGE",
+      "units": "bool"
+    },
+    {
+      "label": "AP_MASTER",
+      "datum": "AUTOPILOT MASTER",
+      "units": "bool"
+    },
+    {
+      "label": "GEAR_L",
+      "datum": "GEAR LEFT POSITION",
+      "units": "percent over 100"
+    },
+    {
+      "label": "GEAR_C",
+      "datum": "GEAR CENTER POSITION",
+      "units": "percent over 100"
+    },
+    {
+      "label": "GEAR_R",
+      "datum": "GEAR RIGHT POSITION",
+      "units": "percent over 100"
+    },
+    {
+      "label": "ENG_FIRE",
+      "datum": "ENG ON FIRE",
+      "units": "bool"
+    },
+    {
+      "label": "ENG_OIL_PS",
+      "datum": "GENERAL ENG OIL PRESSURE:1",
+      "units": "psf"
+    },
+    {
+      "label": "ENG_FUEL_PS",
+      "datum": "GENERAL ENG FUEL PRESSURE:1",
+      "units": "psi"
+    },
+    {
+      "label": "PITOT_HEAT",
+      "datum": "PITOT HEAT",
+      "units": "bool"
+    },
+    {
+      "label": "ENG_START",
+      "datum": "GENERAL ENG STARTER",
+      "units": "bool"
+    },
+    {
+      "label": "PARK_BREAK",
+      "datum": "BRAKE PARKING POSITION",
+      "units": "bool"
+    },
+    {
+      "label": "CANOPY",
+      "datum": "CANOPY OPEN",
+      "units": "percent"
+    }
+  ],
+
+  "LEDs": [
+    {
+      "LED": 0,
+      "trigger": "HDG = 1"
+    },
+    {
+      "LED": 1,
+      "trigger": "NAV = 1"
+    },
+    {
+      "LED": 2,
+      "trigger": "APR = 1"
+    },
+    {
+      "LED": 3,
+      "trigger": "REV = 1"
+    },
+    {
+      "LED": 4,
+      "trigger": "ALT = 1"
+    },
+    {
+      "LED": 5,
+      "trigger": "V_HOLD = 1"
+    },
+    {
+      "LED": 6,
+      "trigger": "FL_LEV = 1"
+    },
+    {
+      "LED": 7,
+      "trigger": "AP_MASTER = 1"
+    },
+    {
+      "LED": 8,
+      "trigger": "GEAR_L = 1"
+    },
+    {
+      "LED": 9,
+      "trigger": "GEAR_L > 0 & GEAR_L < 1"
+    },
+    {
+      "LED": 10,
+      "trigger": "GEAR_C = 1"
+    },
+    {
+      "LED": 11,
+      "trigger": "GEAR_C > 0 & GEAR_C < 1"
+    },
+    {
+      "LED": 12,
+      "trigger": "GEAR_R = 1"
+    },
+    {
+      "LED": 13,
+      "trigger": "GEAR_R > 0 & GEAR_R < 1"
+    },
+    {
+      "LED": 15,
+      "trigger": "ENG_FIRE = 1"
+    },
+    {
+      // Low oil pressure: PT6A normal ~106-135 psi, warn under 105 (psf)
+      "LED": 16,
+      "trigger": "ENG_OIL_PS < 15120"
+    },
+    {
+      // Low fuel pressure: turbine-appropriate threshold (tune if needed)
+      "LED": 17,
+      "trigger": "ENG_FUEL_PS < 10"
+    },
+    {
+      "LED": 18,
+      "trigger": "PITOT_HEAT = 0"
+    },
+    {
+      "LED": 19,
+      "trigger": "ENG_START = 1"
+    },
+    {
+      // LED 22 (VACUUM) intentionally removed - TBM 930 has no vacuum system
+      "LED": 25,
+      "trigger": "PARK_BREAK = 1"
+    },
+    {
+      "LED": 27,
+      "trigger": "CANOPY > 0"
+    }
+  ]
+}
