@@ -32,6 +32,13 @@ This is a small, dependency-light Python tool that does exactly that.
 
 ---
 
+## Screenshots
+
+![BravoLED Config Switcher GUI](images/GUI_Screenshot.png)
+![BravoLED Config Switcher GUI](images/GUI_Screenshot2.png)
+
+---
+
 ## Requirements
 
 - Windows 10 or 11
