@@ -82,7 +82,7 @@ POLL_SECONDS = 3
 # can set the right thresholds in your per-aircraft config files.
 # Turn off again once your thresholds are dialled in.
 # --------------------------------------------------------------------------
-DEBUG_SIMVARS = True
+DEBUG_SIMVARS = False
 
 # Which SimVars to print when DEBUG_SIMVARS is True.
 # Add or remove entries to taste -- these match the labels in config.json.
