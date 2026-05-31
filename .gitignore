@@ -1,0 +1,26 @@
+# Active config is generated/overwritten at runtime by the switcher.
+# Keep the source-of-truth config_*.json files, but not the live one.
+config.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# OS / editor cruft
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
+build/
+dist/
+*.zip
+__pycache__/
+*.py[cod]
+config.json
+
+# Logs, if you ever redirect output to a file
+*.log
