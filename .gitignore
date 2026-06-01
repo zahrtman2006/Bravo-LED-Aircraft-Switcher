@@ -20,7 +20,6 @@ dist/
 *.zip
 __pycache__/
 *.py[cod]
-config.json
 
 # Logs, if you ever redirect output to a file
 *.log
