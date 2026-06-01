@@ -12,7 +12,7 @@ It also fixes a bug in Honeycomb's stock config (see [The index fix](#the-index-
 
 ## Download
 
-**Most people want the ready-to-run app:** grab the latest `BravoSwitcher.exe` from the [**Releases**](../../releases) page. No Python, no setup — see [Quick start (app)](#quick-start-app).
+**Most people want the ready-to-run app:** grab the latest `BravoLED Aircraft Switcher.exe` from the [**Releases**](../../releases) page. No Python, no setup — see [Quick start (app)](#quick-start-app).
 
 Prefer to run or modify the Python source instead? See [Run from source](#run-from-source).
 
