@@ -85,17 +85,19 @@ DEFAULT_CONFIG = "config_default.json"   # fallback when no rule matches
 # How often (seconds) to poll the sim for the current aircraft.
 POLL_SECONDS = 3
 
+
+def full(path_name):
+    """Absolute path to a file inside the BravoLED folder."""
+    return os.path.join(BRAVO_DIR, path_name)
+
+
 # --------------------------------------------------------------------------
 # SETTINGS  (settings.json holds the debug toggle and the aircraft rules)
 # --------------------------------------------------------------------------
 SETTINGS_FILE = "settings.json"
 
 # Used only to seed settings.json the first time, if it doesn't exist yet.
-DEFAULT_RULES = [
-    {"match": "TBM 930",         "config": "config_tbm930.json"},
-    {"match": "Cessna 172",      "config": "config_c172.json"},
-    {"match": "Cessna Skyhawk",  "config": "config_c172.json"},
-]
+DEFAULT_RULES = []
 
 
 def load_settings():
@@ -134,6 +136,18 @@ def save_settings(settings):
     except OSError as e:
         log.error("Could not write %s: %s", SETTINGS_FILE, e)
         return False
+
+
+def ensure_settings_file():
+    """Create settings.json with defaults if it doesn't exist yet, so there's
+    always a file present for the user (and the GUI) to edit."""
+    if not os.path.exists(full(SETTINGS_FILE)):
+        save_settings(load_settings())
+
+
+# Create settings.json on import so it exists the moment the app starts,
+# regardless of how it's launched (GUI, headless, or bundled exe).
+ensure_settings_file()
 
 
 # Which SimVars to print when debug mode is on.
@@ -188,11 +202,6 @@ if __name__ == "__main__":
 # --------------------------------------------------------------------------
 # Helpers
 # --------------------------------------------------------------------------
-def full(path_name):
-    """Absolute path to a file inside the BravoLED folder."""
-    return os.path.join(BRAVO_DIR, path_name)
-
-
 def pick_config_for(title, rules=None):
     """Return the config filename that matches an aircraft TITLE, or the
     default if nothing matches. Rules are read live from settings.json unless
@@ -339,10 +348,8 @@ def main(stop_event=None):
     log.info("BravoLED config switcher starting.")
     log.info("Folder: %s", BRAVO_DIR)
 
-    # Make sure settings.json exists so the GUI (and the user) have something
-    # to edit, and log the initial debug state.
-    if not os.path.exists(full(SETTINGS_FILE)):
-        save_settings(load_settings())
+    # settings.json is created at import (ensure_settings_file); just log
+    # the initial debug state here.
     if load_settings()["debug"]:
         log.info("DEBUG MODE ON -- printing SimVar values periodically")
 
