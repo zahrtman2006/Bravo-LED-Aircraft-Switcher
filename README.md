@@ -62,7 +62,7 @@ The standalone `.exe` needs nothing else. Running from source additionally needs
 
 This is the recommended path for most users.
 
-1. Download `BravoSwitcher.exe` from the [Releases](../../releases) page.
+1. Download `BravoLED Aircraft Switcher.exe` from the [Releases](../../releases) page.
 2. Place it inside your BravoLED folder, alongside `BravoLED.exe`. For the MS Store / Game Pass install that folder is typically:
 
    ```
@@ -78,11 +78,11 @@ This is the recommended path for most users.
        config.json           (already there - gets overwritten automatically)
        config_default.json   (from this repo - the fixed fallback config)
        config_tbm930.json    (from this repo - example aircraft config)
-       BravoSwitcher.exe     (from Releases)
+       BravoLED Aircraft Switcher.exe     (from Releases)
    ```
 
    A `settings.json` (holding your aircraft rules and debug toggle) is created automatically next to the exe on first run; you edit it through the Settings window, not by hand.
-4. Double-click `BravoSwitcher.exe`, click **Start**, and launch a flight in MSFS 2024.
+4. Double-click `BravoLED Aircraft Switcher.exe`, click **Start**, and launch a flight in MSFS 2024.
 
 From there it is automatic. When you load or change aircraft the tool detects it, swaps the matching config, and restarts the driver. Expect a brief LED flicker on aircraft change — that is the driver reloading, and is normal.
 
@@ -158,7 +158,7 @@ pip install pyinstaller
 python -m PyInstaller bravo_switcher.spec
 ```
 
-The finished app appears at `dist\BravoSwitcher.exe`. The included `bravo_switcher.spec` bundles the SimConnect runtime DLL and the lazily-imported SimConnect/pywin32 modules, which a plain PyInstaller invocation would otherwise miss.
+The finished app appears at `dist\BravoLED Aircraft Switcher.exe`. The included `bravo_switcher.spec` bundles the SimConnect runtime DLL and the lazily-imported SimConnect/pywin32 modules, which a plain PyInstaller invocation would otherwise miss.
 
 ---
 
