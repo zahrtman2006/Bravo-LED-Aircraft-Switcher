@@ -1,0 +1,306 @@
+/*
+============================
+BRAVO LIGHT MAP (Quad Engine)
+============================
+
+LED : LABEL           
+----+-----------------------
+0   : HDG                   
+1   : NAV                   
+2   : APR                   
+3   : REV                   
+4   : ALT                   
+5   : VS                    
+6   : IAS                   
+7   : AUTO PILOT  
+  
+8   : GEAR L (green)        
+9   : GEAR L (red)          
+10  : GEAR C (green)        
+11  : GEAR C (red)          
+12  : GEAR R (green)        
+13  : GEAR R (red)          
+14  : MASTER WARNING           NOT ASSIGNED     
+15  : ENGINE FIRE       
+  
+16  : LOW OIL PRESSURE      
+17  : LOW FUEL PRESSURE     
+18  : ANTI ICE              
+19  : STARTER ENGAGED       
+20  : APU                      NOT ASSIGNED
+21  : MASTER CAUTION           NOT ASSIGNED
+22  : VACUUM                
+23  : LOW HYD PRESSURE         NOT ASSIGNED
+  
+24  : AUX FUEL PUMP            NOT ASSIGNED
+25  : PARKING BREAK            
+26  : LOW VOLTS                NOT ASSIGNED
+27  : DOOR                  
+----+-----------------------
+
+NOTE (community fix):
+  Engine SimVars use explicit engine indexes (:1 through :4). Without the
+  index they do not resolve and read as 0. LED triggers use | (OR) so any
+  engine in a warning state lights the annunciator.
+
+*/
+
+{
+  "description": "BRAVO quad engine configuration",
+  "version": "1.0",
+  "author": "Honeycomb aeronautical",
+
+  "simVars": [
+    {
+      "label": "AMPS",
+      "datum": "ELECTRICAL TOTAL LOAD AMPS",
+      "units": "Amperes"
+    },
+    {
+      "label": "HDG",
+      "datum": "AUTOPILOT HEADING LOCK",
+      "units": "bool"
+    },
+    {
+      "label": "NAV",
+      "datum": "AUTOPILOT NAV1 LOCK",
+      "units": "bool"
+    },
+    {
+      "label": "APR",
+      "datum": "AUTOPILOT APPROACH HOLD",
+      "units": "bool"
+    },
+    {
+      "label": "REV",
+      "datum": "AUTOPILOT BACKCOURSE HOLD",
+      "units": "bool"
+    },
+    {
+      "label": "ALT",
+      "datum": "AUTOPILOT ALTITUDE LOCK",
+      "units": "bool"
+    },
+    {
+      "label": "V_HOLD",
+      "datum": "AUTOPILOT VERTICAL HOLD",
+      "units": "bool"
+    },
+    {
+      "label": "FL_LEV",
+      "datum": "AUTOPILOT FLIGHT LEVEL CHANGE",
+      "units": "bool"
+    },
+    {
+      "label": "AP_MASTER",
+      "datum": "AUTOPILOT MASTER",
+      "units": "bool"
+    },
+    {
+      "label": "GEAR_L",
+      "datum": "GEAR LEFT POSITION",
+      "units": "percent over 100"
+    },
+    {
+      "label": "GEAR_C",
+      "datum": "GEAR CENTER POSITION",
+      "units": "percent over 100"
+    },
+    {
+      "label": "GEAR_R",
+      "datum": "GEAR RIGHT POSITION",
+      "units": "percent over 100"
+    },
+    {
+      "label": "ENG_FIRE_1",
+      "datum": "ENG ON FIRE:1",
+      "units": "bool"
+    },
+    {
+      "label": "ENG_FIRE_2",
+      "datum": "ENG ON FIRE:2",
+      "units": "bool"
+    },
+    {
+      "label": "ENG_FIRE_3",
+      "datum": "ENG ON FIRE:3",
+      "units": "bool"
+    },
+    {
+      "label": "ENG_FIRE_4",
+      "datum": "ENG ON FIRE:4",
+      "units": "bool"
+    },
+    {
+      "label": "ENG_OIL_PS_1",
+      "datum": "GENERAL ENG OIL PRESSURE:1",
+      "units": "psf"
+    },
+    {
+      "label": "ENG_OIL_PS_2",
+      "datum": "GENERAL ENG OIL PRESSURE:2",
+      "units": "psf"
+    },
+    {
+      "label": "ENG_OIL_PS_3",
+      "datum": "GENERAL ENG OIL PRESSURE:3",
+      "units": "psf"
+    },
+    {
+      "label": "ENG_OIL_PS_4",
+      "datum": "GENERAL ENG OIL PRESSURE:4",
+      "units": "psf"
+    },
+    {
+      "label": "ENG_FUEL_PS_1",
+      "datum": "GENERAL ENG FUEL PRESSURE:1",
+      "units": "psi"
+    },
+    {
+      "label": "ENG_FUEL_PS_2",
+      "datum": "GENERAL ENG FUEL PRESSURE:2",
+      "units": "psi"
+    },
+    {
+      "label": "ENG_FUEL_PS_3",
+      "datum": "GENERAL ENG FUEL PRESSURE:3",
+      "units": "psi"
+    },
+    {
+      "label": "ENG_FUEL_PS_4",
+      "datum": "GENERAL ENG FUEL PRESSURE:4",
+      "units": "psi"
+    },
+    {
+      "label": "PITOT_HEAT",
+      "datum": "PITOT HEAT",
+      "units": "bool"
+    },
+    {
+      "label": "ENG_START_1",
+      "datum": "GENERAL ENG STARTER:1",
+      "units": "bool"
+    },
+    {
+      "label": "ENG_START_2",
+      "datum": "GENERAL ENG STARTER:2",
+      "units": "bool"
+    },
+    {
+      "label": "ENG_START_3",
+      "datum": "GENERAL ENG STARTER:3",
+      "units": "bool"
+    },
+    {
+      "label": "ENG_START_4",
+      "datum": "GENERAL ENG STARTER:4",
+      "units": "bool"
+    },
+    {
+      "label": "SUCTION",
+      "datum": "SUCTION PRESSURE",
+      "units": "inhg"
+    },
+    {
+      "label": "PARK_BREAK",
+      "datum": "BRAKE PARKING POSITION",
+      "units": "bool"
+    },
+    {
+      "label": "CANOPY",
+      "datum": "CANOPY OPEN",
+      "units": "percent"
+    }
+  ],
+
+  "LEDs": [
+    {
+      "LED": 0,
+      "trigger": "HDG = 1"
+    },
+    {
+      "LED": 1,
+      "trigger": "NAV = 1"
+    },
+    {
+      "LED": 2,
+      "trigger": "APR = 1"
+    },
+    {
+      "LED": 3,
+      "trigger": "REV = 1"
+    },
+    {
+      "LED": 4,
+      "trigger": "ALT = 1"
+    },
+    {
+      "LED": 5,
+      "trigger": "V_HOLD = 1"
+    },
+    {
+      "LED": 6,
+      "trigger": "FL_LEV = 1"
+    },
+    {
+      "LED": 7,
+      "trigger": "AP_MASTER = 1"
+    },
+    {
+      "LED": 8,
+      "trigger": "GEAR_L = 1"
+    },
+    {
+      "LED": 9,
+      "trigger": "GEAR_L > 0 & GEAR_L < 1"
+    },
+    {
+      "LED": 10,
+      "trigger": "GEAR_C = 1"
+    },
+    {
+      "LED": 11,
+      "trigger": "GEAR_C > 0 & GEAR_C < 1"
+    },
+    {
+      "LED": 12,
+      "trigger": "GEAR_R = 1"
+    },
+    {
+      "LED": 13,
+      "trigger": "GEAR_R > 0 & GEAR_R < 1"
+    },
+    {
+      "LED": 15,
+      "trigger": "ENG_FIRE_1 = 1 | ENG_FIRE_2 = 1 | ENG_FIRE_3 = 1 | ENG_FIRE_4 = 1"
+    },
+    {
+      "LED": 16,
+      "trigger": "ENG_OIL_PS_1 < 2000 | ENG_OIL_PS_2 < 2000 | ENG_OIL_PS_3 < 2000 | ENG_OIL_PS_4 < 2000"
+    },
+    {
+      "LED": 17,
+      "trigger": "ENG_FUEL_PS_1 < 1.0 | ENG_FUEL_PS_2 < 1.0 | ENG_FUEL_PS_3 < 1.0 | ENG_FUEL_PS_4 < 1.0"
+    },
+    {
+      "LED": 18,
+      "trigger": "PITOT_HEAT = 0"
+    },
+    {
+      "LED": 19,
+      "trigger": "ENG_START_1 = 1 | ENG_START_2 = 1 | ENG_START_3 = 1 | ENG_START_4 = 1"
+    },
+    {
+      "LED": 22,
+      "trigger": "SUCTION < 3.0"
+    },
+    {
+      "LED": 25,
+      "trigger": "PARK_BREAK = 1"
+    },
+    {
+      "LED": 27,
+      "trigger": "CANOPY > 0"
+    }
+  ]
+}
