@@ -34,6 +34,7 @@ This is a small, dependency-light tool that does exactly that.
 - Swaps in a per-aircraft config and restarts BravoLED automatically on aircraft change.
 - Falls back to a sensible default config when no rule matches.
 - Small GUI to start/stop, view connection state, see the detected aircraft and active config, and watch a live log.
+- **Settings window** to add/edit/reorder aircraft rules and toggle debug mode, no file editing or rebuild required — works the same in the exe and from source.
 - Built-in **debug mode** that prints live SimVar values so you can tune your own thresholds.
 - Corrected default config that fixes the indexed-SimVar bug in Honeycomb's stock file.
 - Ships as a single standalone `.exe` (no Python needed), or runs from source if you prefer.
@@ -79,6 +80,8 @@ This is the recommended path for most users.
        config_tbm930.json    (from this repo - example aircraft config)
        BravoSwitcher.exe     (from Releases)
    ```
+
+   A `settings.json` (holding your aircraft rules and debug toggle) is created automatically next to the exe on first run; you edit it through the Settings window, not by hand.
 4. Double-click `BravoSwitcher.exe`, click **Start**, and launch a flight in MSFS 2024.
 
 From there it is automatic. When you load or change aircraft the tool detects it, swaps the matching config, and restarts the driver. Expect a brief LED flicker on aircraft change — that is the driver reloading, and is normal.
@@ -95,6 +98,8 @@ The GUI shows:
 - **Detected aircraft** — the exact `TITLE` string the sim reports
 - **Active config** — which `config_*.json` is currently loaded
 - **Log** — live output
+
+and the **Settings** button opens an editor for your aircraft rules and the debug toggle (see [Adding your own aircraft](#adding-your-own-aircraft)).
 
 ---
 
@@ -144,7 +149,7 @@ BravoLED\
 
 Then double-click **`Start BravoLED Switcher.bat`** (or run `python bravo_switcher_gui.py`), click **Start**, and launch a flight.
 
-You can also run the switcher headless with no window via `python bravo_config_switcher.py`.
+You can also run the switcher headless with no window via `python bravo_config_switcher.py`. A `settings.json` is created automatically on first run; edit it through the Settings window (or by hand).
 
 ### 4. (Optional) Build your own exe
 
@@ -159,21 +164,25 @@ The finished app appears at `dist\BravoSwitcher.exe`. The included `bravo_switch
 
 ## Adding your own aircraft
 
+Aircraft rules live in `settings.json` (created automatically next to the app), and you edit them right from the GUI — no file editing and no rebuild, whether you use the exe or run from source.
+
 1. Load the aircraft in MSFS with the switcher running and read the **Detected aircraft** line in the GUI — that is the exact title string to match against.
 2. Copy an existing config (e.g. `config_default.json`) to a new file such as `config_yourplane.json` and adjust the thresholds.
-3. Add a rule near the top of `bravo_config_switcher.py` in the `AIRCRAFT_RULES` list:
+3. Click **Settings → Add**, enter a match string and pick (or type) the config file, then **OK**.
 
-```python
-AIRCRAFT_RULES = [
-    {"match": "TBM 930",   "config": "config_tbm930.json"},
-    {"match": "Baron G58", "config": "config_baron58.json"},
-    # ...
-]
+Each rule is a **match string** and a **config file**. Matching is a **case-insensitive substring** of the aircraft title, and rules are checked top to bottom — the first match wins, so use the **Up/Down** buttons to put more specific rules above more general ones. `TBM 930` matches every TBM 930 livery, for example. The Settings window also has **Edit** and **Remove**, and every change is saved immediately and picked up by a running switcher on its next aircraft change (no restart needed).
+
+If you'd rather edit `settings.json` directly, it's plain JSON:
+
+```json
+{
+    "debug": false,
+    "rules": [
+        {"match": "TBM 930",   "config": "config_tbm930.json"},
+        {"match": "Baron G58", "config": "config_baron58.json"}
+    ]
+}
 ```
-
-Matching is a **case-insensitive substring** of the title, and rules are checked top to bottom (put more specific rules above more general ones). `"TBM 930"` will match every TBM 930 livery, for example.
-
-> If you use the prebuilt `.exe`, adding aircraft means editing the source and rebuilding (step 4 above), or switching to running from source. A future version may move the rules into an external file so the exe can read them without a rebuild.
 
 ---
 
@@ -200,15 +209,10 @@ If `|` turns out not to be supported by the driver's parser, an alternative is t
 
 Pressure and similar values differ wildly between aircraft, and MSFS does not always report them in obvious units. To see the real numbers your aircraft produces:
 
-1. Open `bravo_config_switcher.py` and set:
+1. Click **Settings** and turn **Debug mode** ON.
+2. Load a flight (or change aircraft).
 
-```python
-DEBUG_SIMVARS = True
-```
-
-2. Stop and Start the switcher (it only reads the setting at startup), then load a flight.
-
-Every ~15 seconds it prints a snapshot like:
+Every ~15 seconds it prints a snapshot to the log like:
 
 ```
 ---- SimVar debug snapshot ----
@@ -219,9 +223,7 @@ Every ~15 seconds it prints a snapshot like:
 --------------------------------
 ```
 
-Watch the values at idle and at cruise, then set a threshold comfortably outside the normal range in your config (for a low-pressure warning, set it just below normal operating pressure). Set `DEBUG_SIMVARS = False` again when you are done.
-
-> Debug mode lives in the source. To use it with the prebuilt exe, run from source (or rebuild after toggling it).
+The toggle takes effect live on the next poll — no restart needed. Watch the values at idle and at cruise, then set a threshold comfortably outside the normal range in your config (for a low-pressure warning, set it just below normal operating pressure). Turn Debug mode OFF again when you are done.
 
 > **Units gotcha:** the SimConnect library reports `GENERAL ENG OIL PRESSURE` in **psf** (pounds per square foot), not psi. 1 psi ≈ 144 psf. The example TBM config keeps `psf` and uses the raw psf value in its threshold — match whatever the debug output shows.
 
@@ -247,7 +249,7 @@ This fix applies to **everyone** using the stock driver, single-engine GA includ
 
 ## How it works
 
-`bravo_config_switcher.py` connects to MSFS via SimConnect and polls the `TITLE` SimVar. On an aircraft change it copies the matching `config_<name>.json` over `config.json`, then runs `taskkill` on `BravoLED.exe` and relaunches it so the driver reloads the new config. The GUI (`bravo_switcher_gui.py`) imports the switcher and runs it in a background thread, capturing its log output for display — so the command-line switcher also works standalone, and the same code powers the bundled exe.
+`bravo_config_switcher.py` connects to MSFS via SimConnect and polls the `TITLE` SimVar. On an aircraft change it copies the matching `config_<name>.json` over `config.json`, then runs `taskkill` on `BravoLED.exe` and relaunches it so the driver reloads the new config. Aircraft rules and the debug toggle are read from `settings.json` on every poll, so edits made in the Settings window take effect live. The GUI (`bravo_switcher_gui.py`) imports the switcher and runs it in a background thread, capturing its log output for display — so the command-line switcher also works standalone, and the same code powers the bundled exe.
 
 ---
 
@@ -269,7 +271,7 @@ The Scripts folder isn't on PATH. Use `python -m PyInstaller bravo_switcher.spec
 MSFS isn't running, or SimConnect isn't available yet. The tool will connect on its own once the sim is up.
 
 **An LED is stuck on and the value clearly shouldn't trigger it**
-The SimVar probably isn't resolving (reads as 0). Enable debug mode and confirm the value is real. If it reads `n/a`, the datum likely needs an engine index (`:1`) — see [The index fix](#the-index-fix).
+The SimVar probably isn't resolving (reads as 0). Turn on debug mode in **Settings** and confirm the value is real. If it reads `n/a`, the datum likely needs an engine index (`:1`) — see [The index fix](#the-index-fix).
 
 **Config edits don't take effect**
 The driver only reloads on an aircraft change or a Start/Stop of the switcher. After editing a config, Stop then Start the switcher, or change aircraft.
