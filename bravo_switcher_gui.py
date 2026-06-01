@@ -32,7 +32,7 @@ import logging
 import threading
 
 import tkinter as tk
-from tkinter import ttk, scrolledtext
+from tkinter import ttk, scrolledtext, filedialog, messagebox
 
 # The switcher module (same folder when running from source; bundled when frozen).
 import bravo_config_switcher as switcher
@@ -156,6 +156,13 @@ class SwitcherGUI:
                                   font=("Segoe UI", 10, "bold"))
         self.btn_stop.pack(side="left", padx=(8, 0))
 
+        self.btn_settings = tk.Button(bar, text="Settings", width=12,
+                                      command=self.open_settings,
+                                      bg=PANEL, fg=FG, relief="flat",
+                                      activebackground="#333",
+                                      font=("Segoe UI", 10))
+        self.btn_settings.pack(side="left", padx=(8, 0))
+
         tk.Button(bar, text="Clear log", width=12, command=self._clear_log,
                   bg=PANEL, fg=FG, relief="flat", activebackground="#333",
                   font=("Segoe UI", 10)).pack(side="right")
@@ -181,6 +188,12 @@ class SwitcherGUI:
         self.btn_stop.config(state="disabled")
         self.run_dot.config(text="\u25cf  Stopped", fg=DIM)
         self.var_conn.set("-")
+
+    def open_settings(self):
+        """Open the settings window (debug toggle + aircraft rules editor).
+        Changes are saved to settings.json and picked up live by a running
+        switcher on its next poll."""
+        SettingsWindow(self.root)
 
     # ------------------------------------------------------- queue plumbing
     def _drain_queue(self):
@@ -239,6 +252,232 @@ class SwitcherGUI:
     def _on_close(self):
         self.stop()
         self.root.destroy()
+
+
+class SettingsWindow:
+    """Modal-ish window for editing settings.json: the debug toggle and the
+    aircraft rules list (add / remove / reorder). Every change writes
+    settings.json immediately via the switcher's save_settings(), so a running
+    switcher picks them up on its next poll."""
+
+    def __init__(self, parent):
+        self.settings = switcher.load_settings()
+
+        self.win = tk.Toplevel(parent)
+        self.win.title("Settings")
+        self.win.configure(bg=BG)
+        self.win.minsize(520, 420)
+        self.win.transient(parent)
+
+        self._build_debug()
+        self._build_rules()
+        self._build_footer()
+        self._refresh_rules()
+
+    # ------------------------------------------------------------- debug
+    def _build_debug(self):
+        box = tk.Frame(self.win, bg=PANEL)
+        box.pack(fill="x", padx=14, pady=(14, 6))
+
+        tk.Label(box, text="Debug mode", bg=PANEL, fg=FG,
+                 font=("Segoe UI", 11, "bold")).pack(side="left", padx=12, pady=10)
+        tk.Label(box, text="Prints live SimVar values to the log for threshold tuning.",
+                 bg=PANEL, fg=DIM, font=("Segoe UI", 8)).pack(
+            side="left", padx=(0, 8))
+
+        self.btn_debug = tk.Button(box, width=10, command=self._toggle_debug,
+                                   relief="flat", font=("Segoe UI", 10, "bold"))
+        self.btn_debug.pack(side="right", padx=12, pady=8)
+        self._refresh_debug_button()
+
+    def _refresh_debug_button(self):
+        on = self.settings.get("debug", False)
+        self.btn_debug.config(
+            text="ON" if on else "OFF",
+            bg=OKGREEN if on else "#5a1d1d",
+            fg="white",
+            activebackground="#7aa86a" if on else "#7a2626",
+        )
+
+    def _toggle_debug(self):
+        self.settings["debug"] = not self.settings.get("debug", False)
+        self._save()
+        self._refresh_debug_button()
+
+    # ------------------------------------------------------------- rules
+    def _build_rules(self):
+        wrap = tk.Frame(self.win, bg=BG)
+        wrap.pack(fill="both", expand=True, padx=14, pady=6)
+
+        tk.Label(wrap, text="Aircraft rules  (checked top to bottom, first match wins)",
+                 bg=BG, fg=DIM, font=("Segoe UI", 9)).pack(anchor="w")
+
+        body = tk.Frame(wrap, bg=BG)
+        body.pack(fill="both", expand=True)
+
+        # Listbox of "match  ->  config"
+        self.rules_list = tk.Listbox(
+            body, bg="#141414", fg=FG, font=("Consolas", 9),
+            selectbackground="#0e639c", relief="flat", borderwidth=0,
+            activestyle="none", highlightthickness=0)
+        self.rules_list.pack(side="left", fill="both", expand=True)
+
+        side = tk.Frame(body, bg=BG)
+        side.pack(side="right", fill="y", padx=(8, 0))
+        for text, cmd in (("Add", self._add_rule),
+                          ("Edit", self._edit_rule),
+                          ("Remove", self._remove_rule),
+                          ("\u25b2 Up", self._move_up),
+                          ("\u25bc Down", self._move_down)):
+            tk.Button(side, text=text, width=9, command=cmd,
+                      bg=PANEL, fg=FG, relief="flat", activebackground="#333",
+                      font=("Segoe UI", 9)).pack(pady=2)
+
+    def _refresh_rules(self, select=None):
+        self.rules_list.delete(0, "end")
+        for r in self.settings["rules"]:
+            self.rules_list.insert(
+                "end", f'{r.get("match","")}   ->   {r.get("config","")}')
+        if select is not None and 0 <= select < self.rules_list.size():
+            self.rules_list.selection_set(select)
+            self.rules_list.activate(select)
+
+    def _selected_index(self):
+        sel = self.rules_list.curselection()
+        return sel[0] if sel else None
+
+    def _add_rule(self):
+        result = RuleDialog(self.win).result
+        if result:
+            self.settings["rules"].append(result)
+            self._save()
+            self._refresh_rules(select=len(self.settings["rules"]) - 1)
+
+    def _edit_rule(self):
+        i = self._selected_index()
+        if i is None:
+            return
+        result = RuleDialog(self.win, self.settings["rules"][i]).result
+        if result:
+            self.settings["rules"][i] = result
+            self._save()
+            self._refresh_rules(select=i)
+
+    def _remove_rule(self):
+        i = self._selected_index()
+        if i is None:
+            return
+        rule = self.settings["rules"][i]
+        if messagebox.askyesno("Remove rule",
+                               f'Remove rule for "{rule.get("match","")}"?',
+                               parent=self.win):
+            del self.settings["rules"][i]
+            self._save()
+            self._refresh_rules(select=min(i, len(self.settings["rules"]) - 1))
+
+    def _move_up(self):
+        i = self._selected_index()
+        if i is None or i == 0:
+            return
+        rules = self.settings["rules"]
+        rules[i - 1], rules[i] = rules[i], rules[i - 1]
+        self._save()
+        self._refresh_rules(select=i - 1)
+
+    def _move_down(self):
+        i = self._selected_index()
+        if i is None or i >= len(self.settings["rules"]) - 1:
+            return
+        rules = self.settings["rules"]
+        rules[i + 1], rules[i] = rules[i], rules[i + 1]
+        self._save()
+        self._refresh_rules(select=i + 1)
+
+    # ------------------------------------------------------------- footer
+    def _build_footer(self):
+        bar = tk.Frame(self.win, bg=BG)
+        bar.pack(fill="x", padx=14, pady=(4, 12))
+        self.footer = tk.Label(bar, text="", bg=BG, fg=DIM, font=("Segoe UI", 8))
+        self.footer.pack(side="left")
+        tk.Button(bar, text="Close", width=10, command=self.win.destroy,
+                  bg="#0e639c", fg="white", relief="flat",
+                  activebackground="#1177bb",
+                  font=("Segoe UI", 10, "bold")).pack(side="right")
+
+    def _save(self):
+        if switcher.save_settings(self.settings):
+            self.footer.config(text="Saved.")
+        else:
+            self.footer.config(text="Could not save settings.json")
+
+
+class RuleDialog:
+    """Small modal dialog to add or edit one rule (match string + config file).
+    Sets self.result to {'match':..., 'config':...} on OK, or None on cancel."""
+
+    def __init__(self, parent, existing=None):
+        self.result = None
+
+        self.win = tk.Toplevel(parent)
+        self.win.title("Edit rule" if existing else "Add rule")
+        self.win.configure(bg=BG)
+        self.win.transient(parent)
+        self.win.grab_set()  # modal
+        self.win.resizable(False, False)
+
+        self.var_match = tk.StringVar(value=existing.get("match", "") if existing else "")
+        self.var_config = tk.StringVar(value=existing.get("config", "") if existing else "")
+
+        tk.Label(self.win, text="Match (part of the aircraft TITLE):",
+                 bg=BG, fg=FG, font=("Segoe UI", 9)).grid(
+            row=0, column=0, columnspan=2, sticky="w", padx=12, pady=(12, 2))
+        tk.Entry(self.win, textvariable=self.var_match, width=44,
+                 bg="#141414", fg=FG, insertbackground=FG, relief="flat").grid(
+            row=1, column=0, columnspan=2, sticky="we", padx=12)
+
+        tk.Label(self.win, text="Config file:",
+                 bg=BG, fg=FG, font=("Segoe UI", 9)).grid(
+            row=2, column=0, columnspan=2, sticky="w", padx=12, pady=(10, 2))
+        tk.Entry(self.win, textvariable=self.var_config, width=34,
+                 bg="#141414", fg=FG, insertbackground=FG, relief="flat").grid(
+            row=3, column=0, sticky="we", padx=(12, 4))
+        tk.Button(self.win, text="Browse", command=self._browse,
+                  bg=PANEL, fg=FG, relief="flat", activebackground="#333",
+                  font=("Segoe UI", 9)).grid(row=3, column=1, padx=(0, 12))
+
+        btns = tk.Frame(self.win, bg=BG)
+        btns.grid(row=4, column=0, columnspan=2, sticky="e", padx=12, pady=12)
+        tk.Button(btns, text="Cancel", width=9, command=self.win.destroy,
+                  bg=PANEL, fg=FG, relief="flat", activebackground="#333",
+                  font=("Segoe UI", 9)).pack(side="right", padx=(6, 0))
+        tk.Button(btns, text="OK", width=9, command=self._ok,
+                  bg="#0e639c", fg="white", relief="flat",
+                  activebackground="#1177bb",
+                  font=("Segoe UI", 9, "bold")).pack(side="right")
+
+        self.win.wait_window()
+
+    def _browse(self):
+        path = filedialog.askopenfilename(
+            parent=self.win,
+            title="Select config file",
+            initialdir=switcher.BRAVO_DIR,
+            filetypes=[("Config files", "*.json"), ("All files", "*.*")])
+        if path:
+            # Store just the filename; the switcher looks in BRAVO_DIR.
+            import os
+            self.var_config.set(os.path.basename(path))
+
+    def _ok(self):
+        match = self.var_match.get().strip()
+        config = self.var_config.get().strip()
+        if not match or not config:
+            messagebox.showwarning(
+                "Missing info", "Both a match string and a config file are required.",
+                parent=self.win)
+            return
+        self.result = {"match": match, "config": config}
+        self.win.destroy()
 
 
 def main():
