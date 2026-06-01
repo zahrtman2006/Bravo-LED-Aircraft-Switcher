@@ -31,7 +31,7 @@ try:
         raise FileNotFoundError(
             "SimConnect.dll not found at %s -- is the SimConnect package installed?" % _sc_dll)
     # (source_path, destination_folder_inside_exe)
-    _datas = [(_sc_dll, "SimConnect")]
+    _datas = [(_sc_dll, "SimConnect"), (os.path.join("images", "bravo_switcher.ico"), ".")]
 except Exception as e:
     raise SystemExit(
         "Could not locate the SimConnect package/DLL: %s\n"
@@ -82,5 +82,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon="bravo_switcher.ico",     # uncomment and supply a .ico to brand the exe
+    icon=os.path.join("images", "bravo_switcher.ico"),
 )
