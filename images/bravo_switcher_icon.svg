@@ -1,0 +1,13 @@
+<svg width="680" height="680" viewBox="0 0 680 680" xmlns="http://www.w3.org/2000/svg">
+  <rect x="90" y="90" width="500" height="500" rx="80" fill="#111111" stroke="#1e1e1e" stroke-width="2"/>
+  <rect x="190" y="175" width="300" height="80" rx="12" fill="#0a0a0a" stroke="#1e1e1e" stroke-width="1"/>
+  <rect x="210" y="190" width="72" height="50" rx="8" fill="#17a83a"/>
+  <rect x="304" y="190" width="72" height="50" rx="8" fill="#0f0f0f" stroke="#1e1e1e" stroke-width="1"/>
+  <rect x="398" y="190" width="72" height="50" rx="8" fill="#17a83a"/>
+  <rect x="190" y="275" width="300" height="80" rx="12" fill="#0a0a0a" stroke="#1e1e1e" stroke-width="1"/>
+  <rect x="210" y="290" width="72" height="50" rx="8" fill="#0f0f0f" stroke="#1e1e1e" stroke-width="1"/>
+  <rect x="304" y="290" width="72" height="50" rx="8" fill="#17a83a"/>
+  <rect x="398" y="290" width="72" height="50" rx="8" fill="#d44010"/>
+  <text x="340" y="422" text-anchor="middle" font-family="monospace" font-size="28" font-weight="700" fill="#17a83a" letter-spacing="3">BravoLED</text>
+  <text x="340" y="450" text-anchor="middle" font-family="monospace" font-size="14" font-weight="400" fill="#2a6b3a" letter-spacing="2">AIRCRAFT SWITCHER</text>
+</svg>

@@ -69,7 +69,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name="BravoSwitcher",
+    name="BravoLED Aircraft Switcher",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -82,5 +82,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    # icon="bravo.ico",     # uncomment and supply a .ico to brand the exe
+    icon="bravo_switcher.ico",     # uncomment and supply a .ico to brand the exe
 )
