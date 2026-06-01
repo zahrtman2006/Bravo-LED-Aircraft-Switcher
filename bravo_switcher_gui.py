@@ -80,7 +80,13 @@ class SwitcherGUI:
         switcher.log.handlers.clear()        # ensure no stray stream handler
         switcher.log.propagate = True
 
-        root.title("BravoLED Config Switcher")
+        root.title("BravoLED Aircraft Switcher")
+        try:
+            import sys as _sys, os as _os
+            _icon_dir = _sys._MEIPASS if getattr(_sys, "frozen", False) else switcher.BRAVO_DIR
+            root.iconbitmap(_os.path.join(_icon_dir, "bravo_switcher.ico"))
+        except Exception:
+            pass
         root.configure(bg=BG)
         root.minsize(620, 460)
 
