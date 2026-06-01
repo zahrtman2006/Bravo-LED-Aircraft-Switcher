@@ -102,7 +102,7 @@ class SwitcherGUI:
     def _build_header(self):
         bar = tk.Frame(self.root, bg=BG)
         bar.pack(fill="x", padx=14, pady=(12, 4))
-        tk.Label(bar, text="BravoLED Config Switcher", bg=BG, fg=FG,
+        tk.Label(bar, text="BravoLED Aircraft Switcher", bg=BG, fg=FG,
                  font=("Segoe UI", 14, "bold")).pack(side="left")
         self.run_dot = tk.Label(bar, text="\u25cf  Stopped", bg=BG, fg=DIM,
                                  font=("Segoe UI", 10, "bold"))
